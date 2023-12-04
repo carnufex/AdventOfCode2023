@@ -9,20 +9,33 @@ namespace AdventOfCode
 {
 	class Game
 	{
-		private int red = 0;
-		private int green = 0;
-		private int blue = 0;
+		private List<int> red = new();
+		private List<int> green = new();
+		private List<int> blue = new();
 
 		public int GameSum { get; private set; } = 0;
 
-        public Game(string line, int game)
+		public Game(string line)
         {
-			GameSum = parseLine(line) ? game : 0;
+			parseLine(line);
 		}
 
+		public (int, int, int) FindMaxVals()
+		{
+			return (red.Max(), green.Max(), blue.Max());
+		}
 
-		// Game 2: 1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue
-		private bool parseLine(string input)
+		public bool Validate()
+		{
+			bool isValid = true;
+			isValid &= red.All(x => x <= 12);
+			isValid &= green.All(x => x <= 13);
+			isValid &= blue.All(x => x <= 14);
+
+			return isValid;
+		}
+
+		private void parseLine(string input)
 		{
 			var gameScoreSplit = input.Split(": ");
 			var gameSplit = gameScoreSplit[1].Split("; ");
@@ -35,33 +48,19 @@ namespace AdventOfCode
 					switch (colorAmount[1])
 					{
 						case "red":
-							var RedAmount = int.Parse(colorAmount[0]);
-							if (RedAmount > 12)
-							{
-								return false;
-							}
+							red.Add(int.Parse(colorAmount[0]));
 							break;
 						case "green":
-							var GreenAmount = int.Parse(colorAmount[0]);
-							if (GreenAmount > 13)
-							{
-								return false;
-							}
+							green.Add(int.Parse(colorAmount[0]));
 							break;
 						case "blue":
-							var BlueAmount = int.Parse(colorAmount[0]);
-							if (BlueAmount > 14)
-							{
-								return false;
-							}
+							blue.Add(int.Parse(colorAmount[0]));
 							break;
 						default: 
 							break;
 					}
 				}
 			}
-
-			return true;
 		}
 	}
 
@@ -76,40 +75,31 @@ namespace AdventOfCode
 
 		public override ValueTask<string> Solve_1() => new($"Solution to {ClassPrefix} {solvePartOne(_input)}, part 1");
 
-
-
 		public override ValueTask<string> Solve_2() => new($"Solution to {ClassPrefix} {solvePartTwo(_input)}, part 2");
 
 		private object solvePartOne(string input)
 		{
-//			input = @"Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green
-//Game 2: 1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue
-//Game 3: 8 green, 6 blue, 20 red; 5 blue, 4 red, 13 green; 5 green, 1 red
-//Game 4: 1 green, 3 red, 6 blue; 3 green, 6 red; 3 green, 15 blue, 14 red
-//Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green";
-
 			int result = 0;
 			var lines = input.Split("\r\n");
 
-			List<Game> games = new();
-
-
 			for (int i = 0; i < lines.Length; i++)
 			{
-				var game = new Game(lines[i], i + 1);
-				games.Add(game);
-				result += game.GameSum;
+				result += new Game(lines[i]).Validate() ? i+1 : 0;
 			}
-
-
 
 			return result;
 		}
 
 		private object solvePartTwo(string input)
 		{
-			throw new NotImplementedException();
-		}
+			int result = 0;
+			foreach (var line in input.Split("\r\n"))
+			{
+				var tmp = new Game(line).FindMaxVals();
+				result += tmp.Item1 * tmp.Item2 * tmp.Item3;
+			}
 
+			return result;
+		}
 	}
 }
